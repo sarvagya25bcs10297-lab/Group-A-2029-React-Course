@@ -82,10 +82,10 @@ vite-project/
     ├── assets/             # Images etc. (processed by Vite)
     │   └── react.svg
     └── components/
-        ├── Navbar.jsx
+        ├── NavBar.jsx
         ├── navbar.css
         ├── Card.jsx
-        └── card.css        # or Card.css — match import in Card.jsx
+        └── card.css
 ```
 
 ### Important points
@@ -134,14 +134,14 @@ vite-project/
 ```json
 "devDependencies": {
   "@eslint/js": "^9.39.1",
-  "@types/react": "^19.2.5",
+  "@types/react": "^19.2.7",
   "@types/react-dom": "^19.2.3",
   "@vitejs/plugin-react": "^5.1.1",
   "eslint": "^9.39.1",
   "eslint-plugin-react-hooks": "^7.0.1",
   "eslint-plugin-react-refresh": "^0.4.24",
   "globals": "^16.5.0",
-  "vite": "^7.2.4"
+  "vite": "^7.3.1"
 }
 ```
 
@@ -231,24 +231,33 @@ createRoot(document.getElementById("root")).render(
 ## 8. App.jsx — Root Component and Composition
 
 ```jsx
-import "./App.css";
 import Card from "./components/Card";
-import NavBar from "./components/Navbar";
+import NavBar from "./components/NavBar";
 
 function App() {
   return (
     <div>
-      <NavBar />
+      <div style={{ margin: "20px" }}>
+        <NavBar />
+      </div>
 
       <div>
-        <Card title="Laptops" content="Apple Macbooks" footerData="Rs 100000" />
+        <Card title="Iphone 17 Pro" description="Random" price="150000 Rs." />
         <Card
-          title="Headphone"
-          content="Bose Headphones"
-          footerData="Rs 45000"
+          title="Apple MackBook Pro M4"
+          description="Best Macbook in the Market"
+          price="250000 Rs."
         />
-        <Card />
-        <Card />
+        <Card
+          title="Bose Headphones"
+          description="Best headphones in the Market"
+          price="25000 Rs."
+        />
+        <Card
+          title="Apple Airpods"
+          description="Best airpods in the Market"
+          price="30000 Rs."
+        />
       </div>
     </div>
   );
@@ -261,7 +270,7 @@ export default App;
 
 - **Composition** — Building the UI from smaller pieces: `NavBar` and multiple `Card` components.
 - **Importing components** — Each component lives in its own file and is **default-exported**, then **imported** by name (e.g. `import Card from "./components/Card"`).
-- **Props** — Data passed from parent to child: `title`, `content`, `footerData`. `<Card />` with no props uses default behaviour (see next section).
+- **Props** — Data passed from parent to child: `title`, `description`, `price`. All four `<Card>` usages pass these props.
 - **Single root** — The return has one top-level `<div>`; all content is inside it.
 
 ### File naming
@@ -274,14 +283,22 @@ export default App;
 
 ```jsx
 import React from "react";
-import "./Card.css";
+import "./card.css";
 
-function Card({ title, content, footerData }) {
+function Card({ title, description, price }) {
   return (
     <div className="card">
-      <div className="card-title">{title}</div>
-      <div className="card-content">{content}</div>
-      <div className="card-footer">{footerData}</div>
+      <img className="card__image" src="" alt="product" />
+
+      <div className="card__content">
+        <h3 className="card__title">{title}</h3>
+        <p className="card__description">{description}</p>
+
+        <div className="card__footer">
+          <span className="card__price">{price}</span>
+          <button className="card__button">Add to Cart</button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -291,27 +308,27 @@ export default Card;
 
 ### Props via destructuring
 
-- **Props** are the single object argument to the function. **Destructuring** in the parameter list: `({ title, content, footerData })` pulls those keys from the props object.
+- **Props** are the single object argument to the function. **Destructuring** in the parameter list: `({ title, description, price })` pulls those keys from the props object.
 - Equivalent to:
   ```jsx
   function Card(props) {
     const title = props.title;
-    const content = props.content;
-    const footerData = props.footerData;
+    const description = props.description;
+    const price = props.price;
     // ...
   }
   ```
 
 ### Using props in JSX
 
-- **{title}**, **{content}**, **{footerData}** — JavaScript expressions in JSX. If the parent doesn’t pass a prop (e.g. `<Card />`), that value is `undefined`, and React will render nothing (or you can add default values).
+- **{title}**, **{description}**, **{price}** — JavaScript expressions in JSX. If the parent doesn’t pass a prop, that value is `undefined`, and React will render nothing (or you can add default values).
 
 ### Default props (optional improvement)
 
 When `<Card />` is used with no props, you might want fallbacks:
 
 ```jsx
-function Card({ title = "Title", content = "Content", footerData = "—" }) {
+function Card({ title = "Title", description = "Description", price = "—" }) {
   // ...
 }
 ```
@@ -321,18 +338,18 @@ Or:
 ```jsx
 Card.defaultProps = {
   title: "Title",
-  content: "Content",
-  footerData: "—",
+  description: "Description",
+  price: "—",
 };
 ```
 
-### CSS module scope
+### BEM CSS class naming
 
-- **import "./Card.css"** — The CSS file is bundled by Vite. Class names like `.card` are global unless you use CSS Modules (e.g. `Card.module.css`). So use unique class names (e.g. prefixed) to avoid clashes.
+- **import "./card.css"** — The CSS file is bundled by Vite. This project uses **BEM** (Block Element Modifier) naming: `.card` (block), `.card__image`, `.card__content`, `.card__title`, `.card__description`, `.card__footer`, `.card__price`, `.card__button` (elements). BEM avoids naming conflicts between components without needing CSS Modules.
 
 ### Export
 
-- **export default Card** — One default export per file. Import with `import Card from "./components/Card"`.
+- **export default Card** — One default export per file. Imported by `App.jsx` with `import Card from "./components/Card"`.
 
 ---
 
@@ -343,10 +360,16 @@ import './navbar.css'
 
 function NavBar() {
   return (
-    <nav>
-      <a>Home</a>
-      <a>About</a>
-      <a>Contact</a>
+    <nav className="navbar">
+      <div className="navbar__left">
+        <span className="navbar__logo">amazon</span>
+      </div>
+
+      <div className="navbar__links">
+        <a className="navbar__link">Home</a>
+        <a className="navbar__link">About</a>
+        <a className="navbar__link">Contact</a>
+      </div>
     </nav>
   );
 }
@@ -355,7 +378,8 @@ export default NavBar
 ```
 
 - No props — presentational navigation bar.
-- **nav** and **a** are semantic HTML; styling is in `navbar.css` (flex layout, colors, hover). For real navigation, you’d use React Router’s `<Link>` or `href` on `<a>`.
+- Uses **BEM class names** (`.navbar`, `.navbar__left`, `.navbar__logo`, `.navbar__links`, `.navbar__link`) matching `navbar.css` for layout and styling.
+- **navbar.css** gives the bar an Amazon-style dark background (`#131921`), flexbox layout, a gold-accented logo, and white link text. For real navigation, you’d use React Router’s `<Link>` or `href` on `<a>`.
 
 ---
 
@@ -366,16 +390,16 @@ export default NavBar
 | Where | File | Imported in | Scope |
 |-------|------|-------------|--------|
 | Global | `index.css` | `main.jsx` | Whole app |
-| Component | `App.css`, `navbar.css`, `card.css` | `App.jsx`, `Navbar.jsx`, `Card.jsx` | Global by default; apply classes only where you use them |
+| Component | `App.css`, `navbar.css`, `card.css` | `App.jsx`, `NavBar.jsx`, `Card.jsx` | Global by default; apply classes only where you use them |
 
 ### How it works
 
-- In a component file: `import "./Card.css";`. Vite includes that CSS in the bundle. Any element with `className="card"` (and other classes defined in that file) gets the styles.
-- Class names are **global** unless you switch to **CSS Modules** (e.g. `Card.module.css` and `import styles from "./Card.module.css"` then `className={styles.card}`).
+- In a component file: `import "./card.css";`. Vite includes that CSS in the bundle. Any element with the matching `className` (e.g. `className="card__title"`) gets the styles.
+- Class names are **global** unless you switch to **CSS Modules** (e.g. `Card.module.css` and `import styles from "./Card.module.css"` then `className={styles.card}`). This project avoids conflicts by using **BEM naming** (`.card__title`, `.navbar__logo`, etc.).
 
 ### Naming convention
 
-- Use a clear, unique prefix (e.g. `.card`, `.card-title`) or BEM-style names to avoid conflicts. Matching file name case to the import (e.g. `Card.css` and `import "./Card.css"`) avoids issues on case-sensitive systems.
+- This project uses **BEM** (`.card`, `.card__title`, `.navbar`, `.navbar__logo`) which keeps names unique without CSS Modules. Match file name case to the import (e.g. `card.css` and `import "./card.css"`) to avoid issues on case-sensitive file systems.
 
 ---
 
@@ -490,8 +514,8 @@ After Class 2, you should be able to:
 - [ ] Describe the role of `index.html`, `main.jsx`, and `App.jsx` in the Vite setup.
 - [ ] Use **createRoot** from `react-dom/client` to mount the app (React 18+).
 - [ ] Import and use components (e.g. `NavBar`, `Card`) inside another component.
-- [ ] Pass **props** into a component and use them (including destructuring).
-- [ ] Attach CSS files to components with `import "./Component.css"` and use `className`.
+- [ ] Pass **props** into a component and use them (including destructuring, e.g. `title`, `description`, `price`).
+- [ ] Attach CSS files to components with `import "./component.css"` and use `className` with BEM-style names.
 - [ ] Run **npm run dev**, **npm run build**, **npm run preview**, and **npm run lint**.
 - [ ] Explain the role of `vite.config.js` and the `react()` plugin.
 - [ ] Know what ESLint is for and that the project uses React Hooks and React Refresh rules.
@@ -510,10 +534,10 @@ After Class 2, you should be able to:
 | **src/App.jsx** | Root component; composes NavBar and multiple Cards with props. |
 | **src/App.css** | (Optional) styles for App. |
 | **src/index.css** | Global styles. |
-| **src/components/Navbar.jsx** | Navigation bar component; uses navbar.css. |
+| **src/components/NavBar.jsx** | Navigation bar component; uses navbar.css. |
 | **src/components/navbar.css** | Nav layout and link styles. |
-| **src/components/Card.jsx** | Card component with title, content, footerData props; uses Card.css. |
-| **src/components/card.css** | Card layout and hover styles. |
+| **src/components/Card.jsx** | Card component with title, description, price props; uses card.css (BEM). |
+| **src/components/card.css** | Card layout and hover styles (BEM naming). |
 
 ---
 
